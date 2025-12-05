@@ -11,7 +11,11 @@ export interface NewsItem {
   id: number;
   date: string;
   titleKey: string;
+  titleAr?: string;
+  titleEn?: string;
   descKey: string;
+  descAr?: string;
+  descEn?: string;
   image: string;
 }
 
@@ -49,4 +53,31 @@ export interface DashboardStat {
   value: string | number;
   trend?: 'up' | 'down' | 'neutral';
   color: string;
+}
+
+export interface AppSettings {
+  maintenanceMode: boolean;
+  minVersion: string;
+  latestVersion: string;
+  announcementAr: string;
+  announcementEn: string;
+  apiEndpoint: string;
+}
+
+export interface ReportItem {
+  id: number;
+  productName: string;
+  shopName: string;
+  location: string;
+  officialPrice: number;
+  observedPrice: number;
+  details: string;
+  status: 'pending' | 'reviewed' | 'resolved';
+  timestamp: string;
+}
+
+export interface TickerSettings {
+  customTextAr: string;
+  customTextEn: string;
+  showPrices: boolean;
 }

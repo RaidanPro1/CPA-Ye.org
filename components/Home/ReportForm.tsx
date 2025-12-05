@@ -1,17 +1,26 @@
 
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useData } from '../../context/DataContext';
 import { MapPin, Send, Loader2, AlertTriangle, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MOCK_PRICES } from '../../constants';
 
 export const ReportForm: React.FC = () => {
   const { t, language } = useLanguage();
+  const { addReport, prices } = useData(); // Use live prices from context
+
   const [loadingLoc, setLoadingLoc] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  // Form State
   const [location, setLocation] = useState<string>('');
-  const [selectedProduct, setSelectedProduct] = useState<string>('');
+  const [selectedProduct, setSelectedProduct] = useState<string>(''); // Stores product name
   const [officialPrice, setOfficialPrice] = useState<number>(0);
   const [observedPrice, setObservedPrice] = useState<number | string>('');
+  const [shopName, setShopName] = useState('');
+  const [details, setDetails] = useState('');
+  
   const [showDiff, setShowDiff] = useState(false);
 
   const handleGetLocation = () => {
@@ -27,14 +36,17 @@ export const ReportForm: React.FC = () => {
           alert("Could not retrieve location.");
         }
       );
+    } else {
+      setLoadingLoc(false);
+      alert("Geolocation not supported");
     }
   };
 
   const handleProductChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const id = parseInt(e.target.value);
-    const product = MOCK_PRICES.find(p => p.id === id);
+    const product = prices.find(p => p.id === id);
     if (product) {
-      setSelectedProduct(product.code);
+      setSelectedProduct(language === 'ar' ? product.nameAr : product.nameEn);
       setOfficialPrice(product.price);
     } else {
       setSelectedProduct('');
@@ -49,6 +61,40 @@ export const ReportForm: React.FC = () => {
     } else {
       setShowDiff(false);
     }
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!shopName || !selectedProduct) {
+      alert(t('Please fill required fields'));
+      return;
+    }
+
+    setSubmitting(true);
+    
+    // Simulate API delay
+    setTimeout(() => {
+      addReport({
+        productName: selectedProduct,
+        shopName: shopName,
+        location: location || 'Not Specified',
+        officialPrice: officialPrice,
+        observedPrice: Number(observedPrice) || 0,
+        details: details
+      });
+
+      setSubmitting(false);
+      setSuccess(true);
+      
+      // Reset Form
+      setShopName('');
+      setDetails('');
+      setObservedPrice('');
+      setLocation('');
+      
+      // Hide success message after 3 seconds
+      setTimeout(() => setSuccess(false), 3000);
+    }, 1500);
   };
 
   const priceDifference = Number(observedPrice) - officialPrice;
@@ -69,12 +115,23 @@ export const ReportForm: React.FC = () => {
             </div>
           </div>
           
-          <div className="md:w-2/3 p-8 md:p-12">
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+          <div className="md:w-2/3 p-8 md:p-12 relative">
+            {success ? (
+               <motion.div 
+                 initial={{ opacity: 0, scale: 0.8 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 className="absolute inset-0 flex flex-col items-center justify-center bg-white z-20"
+               >
+                 <CheckCircle size={80} className="text-green-500 mb-4" />
+                 <h3 className="text-2xl font-bold text-dark">{t('Report Submitted!') || "تم إرسال البلاغ!"}</h3>
+                 <p className="text-gray-500">{t('Thank you for your cooperation') || "شكراً لتعاونكم معنا"}</p>
+               </motion.div>
+            ) : (
+            <form className="space-y-6" onSubmit={handleSubmit}>
               {/* Comparison Section */}
               <div className="bg-gray-50 p-6 rounded-xl border border-gray-100 mb-6">
                  <h4 className="font-bold text-primary mb-4 flex items-center gap-2">
-                    <CheckCircle size={18} /> Compare Before Reporting
+                    <CheckCircle size={18} /> {language === 'ar' ? 'قارن السعر قبل الإبلاغ' : 'Compare Before Reporting'}
                  </h4>
                  <div className="grid md:grid-cols-2 gap-6">
                     <div>
@@ -82,9 +139,10 @@ export const ReportForm: React.FC = () => {
                       <select 
                         className="w-full px-4 py-3 rounded-lg bg-white border border-gray-200 focus:border-accent outline-none"
                         onChange={handleProductChange}
+                        required
                       >
-                        <option value="">Select Product...</option>
-                        {MOCK_PRICES.map(p => (
+                        <option value="">{language === 'ar' ? 'اختر المنتج...' : 'Select Product...'}</option>
+                        {prices.map(p => (
                           <option key={p.id} value={p.id}>
                             {language === 'ar' ? p.nameAr : p.nameEn}
                           </option>
@@ -123,7 +181,7 @@ export const ReportForm: React.FC = () => {
                               <span className="font-bold">
                                 {isViolation 
                                   ? `${t('violation_alert')} ${priceDifference.toLocaleString()} YER`
-                                  : "Price is within official limits."}
+                                  : (language === 'ar' ? "السعر مطابق للقائمة الرسمية." : "Price is within official limits.")}
                               </span>
                            </div>
                          )}
@@ -136,7 +194,13 @@ export const ReportForm: React.FC = () => {
               <div className="grid md:grid-cols-2 gap-6">
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">{t('shop_name')}</label>
-                  <input type="text" className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-accent outline-none" />
+                  <input 
+                    type="text" 
+                    value={shopName}
+                    onChange={(e) => setShopName(e.target.value)}
+                    className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-accent outline-none" 
+                    required
+                  />
                 </div>
                 <div>
                   <label className="block text-sm font-bold text-gray-700 mb-2">{t('location')}</label>
@@ -161,14 +225,24 @@ export const ReportForm: React.FC = () => {
 
               <div>
                 <label className="block text-sm font-bold text-gray-700 mb-2">{t('details')}</label>
-                <textarea rows={3} className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-accent outline-none"></textarea>
+                <textarea 
+                  rows={3} 
+                  value={details}
+                  onChange={(e) => setDetails(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-50 border border-gray-200 focus:border-accent outline-none"
+                ></textarea>
               </div>
 
-              <button className="w-full bg-accent text-white font-bold py-4 rounded-xl hover:bg-[#e67e22] shadow-lg shadow-accent/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2">
-                <Send size={20} />
+              <button 
+                type="submit" 
+                disabled={submitting}
+                className="w-full bg-accent text-white font-bold py-4 rounded-xl hover:bg-[#e67e22] shadow-lg shadow-accent/30 transition-all transform hover:-translate-y-1 flex items-center justify-center gap-2 disabled:opacity-70"
+              >
+                {submitting ? <Loader2 className="animate-spin" /> : <Send size={20} />}
                 {t('submit')}
               </button>
             </form>
+            )}
           </div>
         </div>
       </div>

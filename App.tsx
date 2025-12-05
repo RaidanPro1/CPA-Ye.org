@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
+import { DataProvider } from './context/DataContext';
 import { Navbar } from './components/Layout/Navbar';
 import { HeroSlider } from './components/Home/HeroSlider';
 import { NewsTicker } from './components/Home/NewsTicker';
@@ -27,31 +28,35 @@ const App: React.FC = () => {
 
   if (route === '#admin') {
     return (
-      <LanguageProvider>
-        <AdminDashboard />
-      </LanguageProvider>
+      <DataProvider>
+        <LanguageProvider>
+          <AdminDashboard />
+        </LanguageProvider>
+      </DataProvider>
     );
   }
 
   return (
-    <LanguageProvider>
-      <div className="min-h-screen flex flex-col">
-        <Navbar />
-        <main className="flex-grow">
-          <NewsTicker />
-          <HeroSlider />
-          <TransparencyDashboard />
-          <Services />
-          <NewsSection />
-          <PriceList />
-          <RightsGuide />
-          <Gallery />
-          <ReportForm />
-          <Publications />
-        </main>
-        <Footer />
-      </div>
-    </LanguageProvider>
+    <DataProvider>
+      <LanguageProvider>
+        <div className="min-h-screen flex flex-col">
+          <Navbar />
+          <main className="flex-grow">
+            <NewsTicker />
+            <HeroSlider />
+            <TransparencyDashboard />
+            <Services />
+            <NewsSection />
+            <PriceList />
+            <RightsGuide />
+            <Gallery />
+            <ReportForm />
+            <Publications />
+          </main>
+          <Footer />
+        </div>
+      </LanguageProvider>
+    </DataProvider>
   );
 };
 

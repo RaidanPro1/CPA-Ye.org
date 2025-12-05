@@ -1,17 +1,12 @@
 import React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useData } from '../../context/DataContext';
 import { Search } from 'lucide-react';
 import { motion } from 'framer-motion';
 
-const IMAGES = [
-  "https://picsum.photos/seed/gal1/400/400",
-  "https://picsum.photos/seed/gal2/400/400",
-  "https://picsum.photos/seed/gal3/400/400",
-  "https://picsum.photos/seed/gal4/400/400"
-];
-
 export const Gallery: React.FC = () => {
   const { t } = useLanguage();
+  const { galleryImages } = useData();
 
   return (
     <section id="library" className="py-20 px-6 md:px-16 bg-white">
@@ -24,7 +19,7 @@ export const Gallery: React.FC = () => {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {IMAGES.map((img, index) => (
+          {galleryImages.map((img, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.9 }}
