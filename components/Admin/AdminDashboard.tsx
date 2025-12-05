@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useData } from '../../context/DataContext';
-import { LayoutDashboard, FileText, Tag, LogOut, AlertTriangle, Lock, User, Smartphone, Plus, Trash2, Save, Image as ImageIcon, RefreshCcw, ScrollText, Download, Filter, Megaphone } from 'lucide-react';
+import { LayoutDashboard, FileText, Tag, LogOut, AlertTriangle, Lock, User, Smartphone, Plus, Trash2, Save, Image as ImageIcon, RefreshCcw, ScrollText, Download, Filter, Megaphone, MapPin } from 'lucide-react';
 import { ReportItem } from '../../types';
 
 export const AdminDashboard: React.FC = () => {
@@ -331,7 +331,7 @@ export const AdminDashboard: React.FC = () => {
                            <td className="px-6 py-4">
                              <div className="font-bold text-primary">{report.shopName}</div>
                              <div className="text-sm text-gray-500">{report.productName}</div>
-                             <div className="text-xs text-gray-400 flex items-center gap-1 mt-1"><MapPinIcon size={12}/> {report.location}</div>
+                             <div className="text-xs text-gray-400 flex items-center gap-1 mt-1"><MapPin size={12}/> {report.location}</div>
                            </td>
                            <td className="px-6 py-4">
                               <div className="text-xs text-gray-500">Official: <span className="font-bold">{report.officialPrice}</span></div>
@@ -582,8 +582,3 @@ export const AdminDashboard: React.FC = () => {
     </div>
   );
 };
-
-// Helper icon for map pin
-const MapPinIcon = ({size}: {size: number}) => (
-  <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
-);
